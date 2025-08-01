@@ -43,3 +43,32 @@ Sys.time()-ST
 colorless.tri.sub.ci(colorless.tri.true, colorless.tri.sub,
                      m, s.m, sub.MC.rep)
 
+# Density plot =================================================================
+
+true_val <- as.vector(scale(unlist(colorless.tri.true)))
+sub_res <- as.vector(scale(unlist(colorless.tri.sub)[-seq(from = 1, to = sub.MC.rep*(sub.rep+1), by = (sub.rep+1))]))
+
+data <- data.frame(
+  value = c(true_val, sub_res),
+  group = rep(c("True", "Subsampling"), times = c(length(true_val), length(sub_res)))
+)
+# remove(true_val, sub_res)
+
+library(ggplot2)
+
+# pdf("file_name.pdf")
+ggplot(data, aes(x = value, fill = group, color = group)) +
+  geom_density(aes(y = ..density..), alpha = 0.2, position = "identity") + 
+  stat_function(fun = function(x) dnorm(x, mean = 0, sd = 1),
+                color = "black", size = 0.5) +
+  scale_fill_manual(values = c("blue", "red")) +  # Custom fill colors
+  scale_color_manual(values = c("blue", "red")) +  # Matching density curve colors
+  theme_bw() +
+  labs(title = "", x = "Value", y = "Density") +
+  theme(axis.text.x = element_text(size = 20),  # Increase x-axis font size
+        axis.text.y = element_text(size = 20, angle = 90),  # Increase y-axis font size
+        axis.title.x = element_text(size = 20), # Increase x-axis title size
+        axis.title.y = element_text(size = 20),
+        legend.position = "none") # Increase y-axis title sizelegend.position = "none"
+# dev.off()
+# remove(data)
