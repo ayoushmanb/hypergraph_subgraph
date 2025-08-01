@@ -83,7 +83,7 @@ get.val2 <- function(n, m, hyp_set, sub.rep, s.m, apx_itr_sub){
 
 type2_two_star_sub_ci <- function(m_num, s.m_num, res_num, centering_num, apx_num,
                                     m_denom, s.m_denom, res_denom, centering_denom,apx_denom,
-                                    alpha = 0.95){
+                                    alpha = 0.05){
   z <- qnorm(1-alpha/2)
   which.finite <- function(x) return(x[is.finite(x)])
   
