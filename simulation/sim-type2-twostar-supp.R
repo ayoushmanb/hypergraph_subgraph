@@ -75,7 +75,7 @@ color_twostar_count_2 <- function(hyp_set, m, n, apx_itr, filter_id){
 }
 
 # Wrapper function =============================================================
-# Function generates the data and count colorless triangles
+# Function generates the data and count Type 2 two stars
 # n = number of vertices
 # m = number of hyperedges
 # n.prob = node appearance probability
