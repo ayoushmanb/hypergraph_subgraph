@@ -76,7 +76,7 @@ color_triangles_count_2 <- function(hyp_set, m, n, apx_itr, filter_id){
 
 
 # Wrapper function =============================================================
-# Function generates the data and count colorless triangles
+# Function generates the data and count Type 2 triangles
 # n = number of vertices
 # m = number of hyperedges
 # n.prob = node appearance probability
@@ -139,10 +139,13 @@ get.val2 <- function(n, m, n.prob, sub.rep, s.m, apx_itr, apx_itr_sub, d){
 # type2.triangle.sub = result from get.val2
 # m = number of hyperedges
 # s.m = s.m subsample sizes
+# apx_itr = approximate number of iteration for incomplete U-stat 
+# apx_itr_sub = approximate number of iteration for incomplete U-stat for subsamples 
 # sub.MC.rep = number of MC iteration for subsampling
 
 type2.triangle.sub.ci <- function(type2.triangle.true, type2.triangle.sub,
-                                 m, apx_itr_sub, sub.MC.rep, alpha = 0.05){
+                                 m, apx_itr, apx_itr_sub, sub.MC.rep, 
+                                 alpha = 0.05){
   return(mean(unlist(lapply(1:sub.MC.rep, function(ii){
     z <- qnorm(1-alpha/2)
     # True value
