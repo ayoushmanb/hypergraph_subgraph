@@ -94,7 +94,7 @@ get.val1 <-  function(n,m, n.prob, apx_itr, d = 1){
   diag(wt.A) <- 0
   filter_id <- c(1:n)[rowSums(wt.A) >= d]
   
-  n.twostar <- color_twostar_count_2(hyp_set, m, n, apx_itr, 1:n)
+  n.twostar <- color_twostar_count_2(hyp_set, m, n, apx_itr, filter_id)
   return(n.twostar)
 }
 
