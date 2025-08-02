@@ -128,6 +128,7 @@ get.val2 <- function(n, m, n.prob, sub.rep, s.m, apx_itr, apx_itr_sub, d){
     samp.hyp <- sample(1:m, s.m, replace = F)
     sub.hyp.set <- sapply(samp.hyp, function(list_i) hyp.set[[list_i]])
     sub.twostar <-  color_twostar_count_2(sub.hyp.set, s.m, n, apx_itr_sub, filter_id)
+    return(sub.twostar)
   })
   return(c(sample_val,unlist(sub.twostar.ct)))
 }
