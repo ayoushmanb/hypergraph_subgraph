@@ -44,4 +44,4 @@ Sys.time()
 # Results ======================================================================
 
 type2.twostar.sub.ci(type2.twostar.true, type2.twostar.sub,
-                     m, apx_itr_sub, sub.MC.rep, alpha = 0.05)
+                     m, apx_itr, apx_itr_sub, sub.MC.rep, alpha = 0.05)

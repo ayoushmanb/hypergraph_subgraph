@@ -138,10 +138,13 @@ get.val2 <- function(n, m, n.prob, sub.rep, s.m, apx_itr, apx_itr_sub, d){
 # type2.twostar.sub = result from get.val2
 # m = number of hyperedges
 # s.m = s.m subsample sizes
+# apx_itr = approximate number of iteration for incomplete U-stat 
+# apx_itr_sub = approximate number of iteration for incomplete U-stat for subsamples 
 # sub.MC.rep = number of MC iteration for subsampling
 
 type2.twostar.sub.ci <- function(type2.twostar.true, type2.twostar.sub,
-                                 m, apx_itr_sub, sub.MC.rep, alpha = 0.05){
+                                 m, apx_itr, apx_itr_sub, sub.MC.rep,
+                                 alpha = 0.05){
   return(mean(unlist(lapply(1:sub.MC.rep, function(ii){
     z <- qnorm(1-alpha/2)
     # True value
