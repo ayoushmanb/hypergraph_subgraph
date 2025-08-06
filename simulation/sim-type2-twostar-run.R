@@ -45,3 +45,37 @@ Sys.time()
 
 type2.twostar.sub.ci(type2.twostar.true, type2.twostar.sub,
                      m, apx_itr, apx_itr_sub, sub.MC.rep, alpha = 0.05)
+
+# Density plot =================================================================
+
+true_val <- as.vector(scale(unlist(type2.twostar.true)))
+sub_res <- as.vector(scale(unlist(type2.twostar.sub)[-seq(from = 1, 
+                                                          to = sub.MC.rep*(sub.rep+1), 
+                                                          by = (sub.rep+1))]))
+
+
+data <- data.frame(
+  value = c(true_val, sub_res),
+  group = rep(c("True", "Subsampling"), times = c(length(true_val), length(sub_res)))
+)
+# remove(true_val, sub_res)
+
+library(ggplot2)
+
+# pdf(paste0("twostar_500_",const,".pdf"))
+ggplot(data, aes(x = value, fill = group, color = group)) +
+  geom_density(aes(y = ..density..), alpha = 0.2, position = "identity", 
+               size = 1) + 
+  stat_function(fun = function(x) dnorm(x, mean = 0, sd = 1),
+                color = "black", size = 1) +
+  scale_fill_manual(values = c("blue", "red")) +  # Custom fill colors
+  scale_color_manual(values = c("blue", "red")) +  # Matching density curve colors
+  theme_bw() +
+  labs(title = "", x = "Value", y = "Density") +
+  theme(axis.text.x = element_text(size = 20),  # Increase x-axis font size
+        axis.text.y = element_text(size = 20, angle = 90),  # Increase y-axis font size
+        axis.title.x = element_text(size = 20), # Increase x-axis title size
+        axis.title.y = element_text(size = 20),
+        legend.position = "none") # Increase y-axis title sizelegend.position = "none"
+# dev.off()
+# remove(data)
