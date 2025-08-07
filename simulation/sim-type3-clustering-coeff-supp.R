@@ -36,11 +36,11 @@ get_common_vertices <- function(x, y, z){
 # ==============================================================================
 # Given a hyperedge (as a vector) produces an adjacency matrix of a subset of vertices
 
-restricted_adjacency_matrix <- function(hyp_edge, n, restricted_vertices){
-  wt_A <- matrix(0, nrow = n, ncol = n)
+restricted_adjacency_matrix <- function(hyp_edge, sub_n){
+  wt_A <- matrix(0, nrow = sub_n, ncol = sub_n)
   wt_A[hyp_edge, hyp_edge] <- 1
   diag(wt_A) <- 0
-  return(wt_A[restricted_vertices, restricted_vertices])
+  return(wt_A)
 }
 
 # ==============================================================================
@@ -70,12 +70,22 @@ color_clus_coeff_3 <- function(hyp_set, m,n, apx_itr, filter_id){
     # sample a triplet of hyperedges randomly
     subset_m3 <- sort(sample(1:m, 3, replace = F))
     
-    all_vertices <- get_common_vertices(hyp_set[[subset_m3[1]]], hyp_set[[subset_m3[2]]], hyp_set[[subset_m3[3]]])
-    deg_fil_vertices <- intersect(all_vertices, filter_id)
+    all_vertices <- get_common_vertices(hyp_set[[subset_m3[1]]], 
+                                        hyp_set[[subset_m3[2]]],
+                                        hyp_set[[subset_m3[3]]])
     
-    wt_A_i  <- restricted_adjacency_matrix(hyp_set[[subset_m3[1]]], n, all_vertices)
-    wt_A_j  <- restricted_adjacency_matrix(hyp_set[[subset_m3[2]]], n, all_vertices)
-    wt_A_k  <- restricted_adjacency_matrix(hyp_set[[subset_m3[3]]], n, all_vertices)
+    sub_n <- length(all_vertices)
+    
+    wt_A_i  <- restricted_adjacency_matrix(
+      match(intersect(hyp_set[[subset_m3[1]]], filter_id),all_vertices),
+      sub_n)
+    wt_A_j  <- restricted_adjacency_matrix(
+      match(intersect(hyp_set[[subset_m3[2]]], filter_id),all_vertices),
+      sub_n)
+    wt_A_k  <- restricted_adjacency_matrix(
+      match(intersect(hyp_set[[subset_m3[3]]], filter_id),all_vertices),
+      sub_n)
+  
     # Type 3 triangle and Type 2 two-stars
     return(clus_3_func(wt_A_i, wt_A_j, wt_A_k))
   })

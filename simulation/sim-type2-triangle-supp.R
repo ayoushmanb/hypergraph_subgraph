@@ -36,16 +36,16 @@ get_common_vertices <- function(x, y){
 # ==============================================================================
 # Given a hyperedge (as a vector) produces an adjacency matrix of a subset of vertices
 
-restricted_adjacency_matrix <- function(hyp_edge, n, restricted_vertices){
-  wt_A <- matrix(0, nrow = n, ncol = n)
+restricted_adjacency_matrix <- function(hyp_edge, sub_n){
+  wt_A <- matrix(0, nrow = sub_n, ncol = sub_n)
   wt_A[hyp_edge, hyp_edge] <- 1
   diag(wt_A) <- 0
-  return(wt_A[restricted_vertices, restricted_vertices])
+  return(wt_A)
 }
 
 # ==============================================================================
 # Function to compute Type 2 triangles given two adjacency matrices or a subset
-  
+
 triangles_2_func <- function(mat1, mat2){
   return(sum(c(sum(diag(mat1 %*% mat2 %*% mat2))), sum(diag(mat1 %*% mat1 %*% mat2))))
 }
@@ -63,12 +63,17 @@ color_triangles_count_2 <- function(hyp_set, m, n, apx_itr, filter_id){
     # sample a pair of hyperedges randomly
     subset_m2 <- sample(1:m, 2, replace = F)
     
-    all_vertices <- get_common_vertices(hyp_set[[subset_m2[1]]], hyp_set[[subset_m2[2]]])
+    all_vertices <- get_common_vertices(hyp_set[[subset_m2[1]]], 
+                                        hyp_set[[subset_m2[2]]])
     
-    deg_fil_vertices <- intersect(all_vertices, filter_id)
+    sub_n <- length(all_vertices)
     
-    wt_A_i  <- restricted_adjacency_matrix(hyp_set[[subset_m2[1]]], n, deg_fil_vertices)
-    wt_A_j  <- restricted_adjacency_matrix(hyp_set[[subset_m2[2]]], n, deg_fil_vertices)
+    wt_A_i  <- restricted_adjacency_matrix(
+      match(intersect(hyp_set[[subset_m2[1]]], filter_id),all_vertices),
+      sub_n)
+    wt_A_j  <- restricted_adjacency_matrix(
+      match(intersect(hyp_set[[subset_m2[2]]], filter_id),all_vertices),
+      sub_n)
     # Type 2 triangles
     return(triangles_2_func(wt_A_i, wt_A_j))
   }))))
@@ -144,8 +149,8 @@ get.val2 <- function(n, m, n.prob, sub.rep, s.m, apx_itr, apx_itr_sub, d){
 # sub.MC.rep = number of MC iteration for subsampling
 
 type2.triangle.sub.ci <- function(type2.triangle.true, type2.triangle.sub,
-                                 m, apx_itr, apx_itr_sub, sub.MC.rep, 
-                                 alpha = 0.05){
+                                  m, apx_itr, apx_itr_sub, sub.MC.rep, 
+                                  alpha = 0.05){
   return(mean(unlist(lapply(1:sub.MC.rep, function(ii){
     z <- qnorm(1-alpha/2)
     # True value

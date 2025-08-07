@@ -44,5 +44,4 @@ Sys.time()
 # Results ======================================================================
 
 type2.triangle.sub.ci(type2.triangle.true, type2.triangle.sub,
-                     m, apx_itr, apx_itr_sub, sub.MC.rep, alpha = 0.05)
-
+                      m, apx_itr, apx_itr_sub, sub.MC.rep, alpha = 0.05)
