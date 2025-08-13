@@ -79,7 +79,7 @@ If you use this code or data, please cite:
 
 ```mathematica
 @article{Bhattacharya2025HypergraphSubgraph,
-  title={Inference for Subgraph Counts in Exchangeable Hyperedge Models},
+  title={{Statistical Inference for Subgraph Frequencies of Exchangeable Hyperedge Models}},
   author={Bhattacharya, Ayoushman and Chakraborty, Nilanjan and Lunde, Robert},
   year={2025},
   journal={Journal TBD}
