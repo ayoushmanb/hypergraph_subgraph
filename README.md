@@ -18,7 +18,7 @@ hypergraph_subgraph/
 │
 ├── simulation/ # Simulation experiments
 │
-└── README.Rmd # This file
+└── README.md # This file
 ```
 
 
@@ -29,12 +29,10 @@ The code is written in **R** and requires the following packages:
 ```r
 install.packages(c(
   "igraph",
-  "tidyverse",
-  "magrittr",
+  "rje",
   "ggplot2",
-  "reshape2",
   "parallel",
-  "data.table"
+  "RSpectra"
 ))
 ```
 
