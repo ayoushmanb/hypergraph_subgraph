@@ -4,6 +4,10 @@
 
 In statistical network analysis, models for binary adjacency matrices satisfying vertex exchangeability are commonly used. However, such models may fail to capture key features of the data-generating process when interactions, rather than nodes, are fundamental units. We study statistical inference for subgraph counts under an exchangeable hyperedge model.  We introduce several classes of subgraph statistics for hypergraphs and develop inferential tools for subgraph frequencies that account for edge multiplicity. We show that a subclass of these subgraph statistics is robust to the deletion of low-degree nodes, enabling inference in settings where low-degree nodes are more likely to be missing. We also examine a more traditional notion of subgraph frequency that ignores multiplicity, showing that while inference based on limiting distributions is feasible in some cases, a non-degenerate limiting distribution may not exist in others. Empirically, we assess our methods through simulations and newly collected real-world hypergraph data on academic and movie collaborations, where our inferential tools outperform traditional approaches based on binary adjacency matrices.
 
+## Main Article
+
+The full article is available a https://arxiv.org/abs/2508.13258.
+
 ## Repository Structure
 
 ```
@@ -76,10 +80,13 @@ The real_data/data_collection/ folder contains preprocessed .RData files for:
 If you use this code or data, please cite:
 
 ```mathematica
-@article{Bhattacharya2025HypergraphSubgraph,
+@article{bhattacharya2025statistical,
   title={{Statistical Inference for Subgraph Frequencies of Exchangeable Hyperedge Models}},
   author={Bhattacharya, Ayoushman and Chakraborty, Nilanjan and Lunde, Robert},
+  journal={arXiv preprint},
+  volume={arXiv:2508.13258},
   year={2025},
-  journal={Journal TBD}
+  month={Aug},
+  note={\url{https://doi.org/10.48550/arXiv.2508.13258}}
 }
 ```
