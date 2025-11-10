@@ -6,7 +6,7 @@ In statistical network analysis, models for binary adjacency matrices satisfying
 
 ## Main Article
 
-The full article is available a https://arxiv.org/abs/2508.13258.
+The full article is available at https://arxiv.org/abs/2508.13258.
 
 ## Repository Structure
 
