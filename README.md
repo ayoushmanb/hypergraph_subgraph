@@ -37,7 +37,7 @@ install.packages(c(
   "igraph",
   "rje",
   "ggplot2",
-  "parallel",
+  "pbmclapply",
   "RSpectra"
 ))
 ```
