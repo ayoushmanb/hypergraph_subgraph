@@ -22,6 +22,8 @@ hypergraph_subgraph/
 │
 ├── simulation/ # Simulation experiments
 │
+├── support_functions/ # All utility functions
+│
 └── README.md # This file
 ```
 
