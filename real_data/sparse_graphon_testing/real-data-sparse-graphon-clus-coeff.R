@@ -1,4 +1,4 @@
-source("~/R/hyp-real-data/real-data-final/real-data-sparse-graphon-clus-coeff-supp.R")
+source("./support_functions/real-data-sparse-graphon-clus-coeff-supp.R")
 
 #===============================================================================
 # JASA

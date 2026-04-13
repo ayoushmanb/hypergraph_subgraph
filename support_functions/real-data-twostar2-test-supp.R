@@ -1,3 +1,7 @@
+library(igraph)
+library(rje)
+library(pbmcapply)
+
 # ==============================================================================
 # Function to calculate A union B
 
@@ -60,13 +64,13 @@ color_twostar_count_2 <- function(hyp_set, m,n, apx_itr){
 
 get.val2 <- function(n, m, hyp_set, sub.rep, s.m, apx_itr_sub){
   # Subsamplimg iteration for each hyper graph
-  sub.twostar.ct <- mclapply(1:sub.rep, function(sub_itr){
+  sub.twostar.ct <- pbmclapply(1:sub.rep, function(sub_itr){
     # choose sample of size s.m
     samp.hyp <- sample(1:m, s.m, replace = F)
     sub.hyp_set <- sapply(samp.hyp, function(list_i) hyp_set[[list_i]])
     sub.twostar <-  color_twostar_count_2(sub.hyp_set, s.m, n, apx_itr_sub)
     return(sub.twostar)
-  }, mc.cores = n.core)
+  }, mc.cores = n.core, mc.style = "ETA", mc.set.seed = F)
   return(unlist(sub.twostar.ct))
 }
 

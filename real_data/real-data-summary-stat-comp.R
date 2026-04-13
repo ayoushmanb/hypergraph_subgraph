@@ -1,4 +1,4 @@
-source("summary-stat-supp.R")
+source("./support_functions/summary-stat-supp.R")
 
 hyp_edge_list <- hyp_edge_list # hypergraph as list
 

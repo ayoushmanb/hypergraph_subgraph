@@ -1,8 +1,4 @@
-setwd("~/hyperedge/real-data-test")
-source('~/hyperedge/real-data-test/real-data-twostar2-test-supp.R')
-library(igraph)
-library(rje)
-library(parallel)
+source('./support_functions/real-data-twostar2-test-supp.R')
 
 # =============================================================================
 # Load the data set
