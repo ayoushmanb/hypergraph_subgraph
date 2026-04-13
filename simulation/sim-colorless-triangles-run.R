@@ -1,5 +1,4 @@
-setwd("~/hyperedge")
-source("sim-colorless-triangles-supp.R")
+source("./support_functions/sim-colorless-triangles-supp.R")
 
 # Simulation setting ===========================================================
 
@@ -14,27 +13,23 @@ sub.rep <- 10 # Number of subsamples
 sub.MC.rep <- 10 # MC iteration for subsampling
 
 n.core <- 5 # number of cores to use
-
+exponent <- 2 # Decay rate
 n.prob <- dpois(2:n, 6) # Hyperedge sizes follow Poi(6)
 n.prob <- n.prob/sum(n.prob) # probability
 
 # MC approximation =============================================================
 
-ST <- Sys.time()
+
 set.seed(1234)
-colorless.tri.true <- unlist(mclapply(1:MC.rep, function(rep){
-  get.val1(n,m,n.prob,d)
-}, mc.cores =  n.core))
-Sys.time()-ST
+colorless.tri.true <- unlist(pbmclapply(1:MC.rep, function(rep){
+  get.val1(n,m,n.prob,exponent,d)
+}, mc.cores =  n.core, mc.set.seed = F, mc.style = "ETA"))
 
 # Subsampling ==================================================================
 
-Sys.time()
-ST <- Sys.time()
-colorless.tri.sub <- mclapply(1:sub.MC.rep, function(sub_rep){
-  (get.val2(n, m, n.prob, sub.rep, s.m, d))
-}, mc.cores = n.core)
-Sys.time()-ST
+colorless.tri.sub <- pbmclapply(1:sub.MC.rep, function(sub_rep){
+  (get.val2(n, m, n.prob,exponent, sub.rep, s.m, d))
+}, mc.cores = n.core, mc.set.seed = F, mc.style = "ETA")
 
 # save.image("file_name.RData") 
 

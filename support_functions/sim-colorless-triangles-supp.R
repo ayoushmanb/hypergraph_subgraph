@@ -1,13 +1,13 @@
 library(igraph)
 library(rje)
-library(parallel)
+library(pbmcapply)
 
 # Data generation ==============================================================
 # n = number of vertices
 # m = number of hyperedges
 # n.prob = node appearance probability
 
-data.gen <- function(n,m,n.prob) {
+data.gen <- function(n,m,n.prob,exponent) {
   hyp.set <- list()
   
   # two step process:
@@ -19,7 +19,7 @@ data.gen <- function(n,m,n.prob) {
     n.sam <- sample(2:n, 1, prob = n.prob) 
     # select the hyperedge given the size
     n.nodes <- sort(sample(1:n, n.sam, replace = F, 
-                           prob = (1/c(1:n)^2)/sum(1/c(1:n)^2))) 
+                           prob = (1/c(1:n)^exponent)/sum(1/c(1:n)^exponent))) 
     
     hyp.set[[ii]] <- n.nodes # store hyperedge as a vector
   }
@@ -36,12 +36,15 @@ colorless.tri.func.df <- function(n, m, hyp.set, d) {
   
   # Form weighted adjacency matrix
   wt.A <- matrix(0, ncol = n, nrow = n)
+  # Form weighted incedence matrix
+  Inc_mat <- matrix(0, ncol = n, nrow = m)
   
   for (ii in 1:m){
     wt.A[hyp.set[[ii]], hyp.set[[ii]]] <- wt.A[hyp.set[[ii]], hyp.set[[ii]]]+1
+    Inc_mat[ii,hyp.set[[ii]]] <- 1
   }
   diag(wt.A) <- 0
-  filter_id <- rowSums(wt.A) >= d
+  filter_id <- c(1:n)[colSums(Inc_mat) >= d]
   
   # count triangles 
   tri.ct <- sum(diag(wt.A[filter_id,filter_id] %*% 
@@ -57,8 +60,8 @@ colorless.tri.func.df <- function(n, m, hyp.set, d) {
 # n.prob = node appearance probability
 # d = degree filtering, default : d = 1 (no filtering)
 
-get.val1 <-  function(n,m, n.prob,d = 1){
-  hyp.set <- data.gen(n,m,n.prob)
+get.val1 <-  function(n,m, n.prob, exponent,d = 1){
+  hyp.set <- data.gen(n,m,n.prob,exponent)
   n.tri <- colorless.tri.func.df(n,m, hyp.set,d)
   return(n.tri)
 }
@@ -72,8 +75,8 @@ get.val1 <-  function(n,m, n.prob,d = 1){
 # s.m = subsample sizes
 # d = degree filtering, default : d = 1 (no filtering)
 
-get.val2 <- function(n, m, n.prob, sub.rep, s.m, d = 1){
-  hyp.set <- data.gen(n,m,n.prob) # generate a hyper graph
+get.val2 <- function(n, m, n.prob, exponent, sub.rep, s.m, d = 1){
+  hyp.set <- data.gen(n,m,n.prob,exponent) # generate a hyper graph
   
   sample_val <- colorless.tri.func.df(n,m,hyp.set,d)
   

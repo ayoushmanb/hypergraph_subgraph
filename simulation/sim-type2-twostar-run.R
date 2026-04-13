@@ -1,5 +1,4 @@
-# setwd("~/hyperedge/sim_1000_1000/")
-source("sim-type2-twostar-supp.R")
+source("./support_functions/sim-type2-twostar-supp.R")
 
 # Simulation setting ===========================================================
 
@@ -16,28 +15,22 @@ sub.MC.rep <- 10 # 1000 # MC iteration for subsampling
 apx_itr_sub <- round(s.m^1.1) # approximate iteration for incomplete U-stat
 
 n.core <- 5 # number of cores to use
-
+exponent <- 2 # Decay rate
 n.prob <- dpois(2:n, 6) # Hyperedge sizes follow Poi(6)
 n.prob <- n.prob/sum(n.prob) # probability
 
 # MC approximation =============================================================
 
-ST <- Sys.time()
 set.seed(1234)
-type2.twostar.true <- unlist(mclapply(1:MC.rep, function(rep){
-  get.val1(n,m,n.prob, apx_itr, 1)
-}, mc.cores =  n.core))
-Sys.time()-ST
+type2.twostar.true <- unlist(pbmclapply(1:MC.rep, function(rep){
+  get.val1(n,m,n.prob,exponent, apx_itr, 1)
+}, mc.cores =  n.core, mc.set.seed = F, mc.style = "ETA"))
 
 # Subsampling ==================================================================
 
-Sys.time()
-ST <- Sys.time()
-type2.twostar.sub <- mclapply(1:sub.MC.rep, function(sub_rep){
-  return(get.val2(n, m, n.prob, sub.rep, s.m, apx_itr, apx_itr_sub, d))
-}, mc.cores = n.core)
-Sys.time()-ST
-Sys.time()
+type2.twostar.sub <- pbmclapply(1:sub.MC.rep, function(sub_rep){
+  return(get.val2(n, m, n.prob, exponent, sub.rep, s.m, apx_itr, apx_itr_sub, d))
+}, mc.cores = n.core, mc.set.seed = F, mc.style = "ETA")
 
 # save.image("file_name.RData") 
 

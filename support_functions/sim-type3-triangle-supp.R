@@ -1,13 +1,13 @@
 library(igraph)
 library(rje)
-library(parallel)
+library(pbmcapply)
 
 # Data generation ==============================================================
 # n = number of vertices
 # m = number of hyperedges
 # n.prob = node appearance probability
 
-data.gen <- function(n,m,n.prob) {
+data.gen <- function(n,m,n.prob, exponent) {
   hyp.set <- list()
   
   # two step process:
@@ -19,7 +19,7 @@ data.gen <- function(n,m,n.prob) {
     n.sam <- sample(2:n, 1, prob = n.prob) 
     # select the hyperedge given the size
     n.nodes <- sort(sample(1:n, n.sam, replace = F, 
-                           prob = (1/c(1:n)^2)/sum(1/c(1:n)^2))) 
+                           prob = (1/c(1:n)^exponent)/sum(1/c(1:n)^exponent))) 
     
     hyp.set[[ii]] <- n.nodes # store hyperedge as a vector
   }
@@ -53,32 +53,32 @@ triangles_3_func <- function(mat1, mat2, mat3){
 
 # ==============================================================================
 # Function to compute the Type 3 triangles of a hypergraph 
-# hyp_set = hypergraph as a list
+# hyp.set = hypergraph as a list
 # m = hyper of hyperedges
 # n = number of vertices
 # apx_itr = approximate number of iteration for incomplete U-stat 
 # filter_id = degree filtered vertices
 
 
-color_triangles_count_3 <- function(hyp_set, m,n, apx_itr, filter_id){
+color_triangles_count_3 <- function(hyp.set, m,n, apx_itr, filter_id){
   sum(unlist(lapply(1:apx_itr, function(apx_itr_i){
     # sample a triplet of hyperedges randomly
     subset_m3 <- sample(1:m, 3, replace = F)
     
-    all_vertices <- get_common_vertices(hyp_set[[subset_m3[1]]], 
-                                        hyp_set[[subset_m3[2]]],
-                                        hyp_set[[subset_m3[3]]])
+    all_vertices <- get_common_vertices(hyp.set[[subset_m3[1]]], 
+                                        hyp.set[[subset_m3[2]]],
+                                        hyp.set[[subset_m3[3]]])
     
     sub_n <- length(all_vertices)
     
     wt_A_i  <- restricted_adjacency_matrix(
-      match(intersect(hyp_set[[subset_m3[1]]], filter_id),all_vertices),
+      match(intersect(hyp.set[[subset_m3[1]]], filter_id),all_vertices),
       sub_n)
     wt_A_j  <- restricted_adjacency_matrix(
-      match(intersect(hyp_set[[subset_m3[2]]], filter_id),all_vertices),
+      match(intersect(hyp.set[[subset_m3[2]]], filter_id),all_vertices),
       sub_n)
     wt_A_k  <- restricted_adjacency_matrix(
-      match(intersect(hyp_set[[subset_m3[3]]], filter_id),all_vertices),
+      match(intersect(hyp.set[[subset_m3[3]]], filter_id),all_vertices),
       sub_n)
     
     # Type 3 triangles
@@ -95,19 +95,18 @@ color_triangles_count_3 <- function(hyp_set, m,n, apx_itr, filter_id){
 # d = degree filtering, default : d = 1 (no filtering)
 
 
-get.val1 <-  function(n,m, n.prob, apx_itr, d = 1){
-  hyp_set <- data.gen(n,m,n.prob)
+get.val1 <-  function(n,m, n.prob,exponent, apx_itr, d = 1){
+  hyp.set <- data.gen(n,m,n.prob,exponent)
   
-  # Form weighted adjacency matrix
-  wt.A <- matrix(0, ncol = n, nrow = n)
+  # Form weighted incedence matrix
+  Inc_mat <- matrix(0, ncol = n, nrow = m)
   
   for (ii in 1:m){
-    wt.A[hyp_set[[ii]], hyp_set[[ii]]] <- wt.A[hyp_set[[ii]], hyp_set[[ii]]]+1
+    Inc_mat[ii,hyp.set[[ii]]] <- 1
   }
-  diag(wt.A) <- 0
-  filter_id <- c(1:n)[rowSums(wt.A) >= d]
+  filter_id <- c(1:n)[colSums(Inc_mat) >= d]
   
-  n.tri <- color_triangles_count_3(hyp_set, m, n, apx_itr, filter_id)
+  n.tri <- color_triangles_count_3(hyp.set, m, n, apx_itr, filter_id)
   return(n.tri)
 }
 
@@ -115,23 +114,23 @@ get.val1 <-  function(n,m, n.prob, apx_itr, d = 1){
 # Main function for subsampling
 # n = number of vertices
 # m = hyper of hyperedges
-# hyp_set = hypergraph as a list
+# hyp.set = hypergraph as a list
 # sub.rep = Number of subsamples
 # s.m = subsample size
 # apx_itr = approximate number of iteration for incomplete U-stat 
 # apx_itr_sub = approximate number of iteration for incomplete U-stat for subsamples 
 # d = degree filtering, default : d = 1 (no filtering)
 
-get.val2 <- function(n, m, n.prob, sub.rep, s.m, apx_itr,apx_itr_sub, d){
-  hyp.set <- data.gen(n,m,n.prob) # generate a hyper graph
+get.val2 <- function(n, m, n.prob,exponent,sub.rep, s.m, apx_itr,apx_itr_sub, d){
+  hyp.set <- data.gen(n,m,n.prob, exponent) # generate a hyper graph
   
-  wt.A <- matrix(0, ncol = n, nrow = n)
+  # Form weighted incedence matrix
+  Inc_mat <- matrix(0, ncol = n, nrow = m)
   
   for (ii in 1:m){
-    wt.A[hyp.set[[ii]], hyp.set[[ii]]] <- wt.A[hyp.set[[ii]], hyp.set[[ii]]]+1
+    Inc_mat[ii,hyp.set[[ii]]] <- 1
   }
-  diag(wt.A) <- 0
-  filter_id <- c(1:n)[rowSums(wt.A) >= d]
+  filter_id <- c(1:n)[colSums(Inc_mat) >= d]
   
   sample_val <- color_triangles_count_3(hyp.set,m,n,apx_itr,filter_id)
   

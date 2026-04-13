@@ -1,13 +1,13 @@
 library(igraph)
 library(rje)
-library(parallel)
+library(pbmcapply)
 
 # Data generation ==============================================================
 # n = number of vertices
 # m = number of hyperedges
 # n.prob = node appearance probability
 
-data.gen <- function(n,m,n.prob) {
+data.gen <- function(n,m,n.prob, exponent) {
   hyp.set <- list()
   
   # two step process:
@@ -19,7 +19,7 @@ data.gen <- function(n,m,n.prob) {
     n.sam <- sample(2:n, 1, prob = n.prob) 
     # select the hyperedge given the size
     n.nodes <- sort(sample(1:n, n.sam, replace = F, 
-                           prob = (1/c(1:n)^2)/sum(1/c(1:n)^2))) 
+                           prob = (1/c(1:n)^exponent)/sum(1/c(1:n)^exponent))) 
     
     hyp.set[[ii]] <- n.nodes # store hyperedge as a vector
   }
@@ -27,10 +27,10 @@ data.gen <- function(n,m,n.prob) {
 }
 
 # ==============================================================================
-# Function to calculate A union B
+# Function to calculate A union B union C
 
-get_common_vertices <- function(x, y){
-  return(sort(union(x,y)))
+get_common_vertices <- function(x, y, z){
+  return(sort(union(union(x,y), z)))
 }
 
 # ==============================================================================
@@ -44,125 +44,127 @@ restricted_adjacency_matrix <- function(hyp_edge, sub_n){
 }
 
 # ==============================================================================
-# Function to compute Type 2 clustering coefficient given two adjacency matrices 
+# Function to compute Type 3 clustering coefficient given two adjacency matrices 
 # or a subset
-# num = Type 2 triangles
+# num = Type 3 triangles
 # denom = Type 2 two-stars
 
-clus_2_func <- function(mat1, mat2){
-  num <- sum(diag(mat1 %*% mat2 %*% mat2 + mat1 %*% mat1 %*% mat2), na.rm = T) 
-  denom <- sum(mat1 %*% mat2 - mat1 * mat2, na.rm = T)
+clus_3_func <- function(mat1, mat2, mat3){
+  num <- sum(diag(mat1 %*% mat2 %*% mat3), na.rm = T) 
+  denom <- sum(mat1 %*% mat2 - mat1 * mat2, na.rm = T) +
+    sum(mat2 %*% mat3 - mat2 * mat3, na.rm = T) +
+    sum(mat1 %*% mat3 - mat1 * mat3, na.rm = T)
   return(c(num, denom))
 }
 
 # ==============================================================================
-# Function to compute the Type 2 clustering coefficient of a hypergraph 
-# hyp_set = hypergraph as a list
+# Function to compute the Type 3 clustering coefficient of a hypergraph 
+# hyp.set = hypergraph as a list
 # m = hyper of hyperedges
 # n = number of vertices
 # apx_itr = approximate number of iteration for incomplete U-stat 
 # filter_id = degree filtered vertices
 
-color_clus_coeff_2 <- function(hyp_set, m, n, apx_itr, filter_id){
+color_clus_coeff_3 <- function(hyp.set, m,n, apx_itr, filter_id){
   clus_list <- lapply(1:apx_itr, function(apx_itr_i){
-    # sample a pair of hyperedges randomly
-    subset_m2 <- sample(1:m, 2, replace = F)
+    # sample a triplet of hyperedges randomly
+    subset_m3 <- sort(sample(1:m, 3, replace = F))
     
-    all_vertices <- get_common_vertices(hyp_set[[subset_m2[1]]], 
-                                        hyp_set[[subset_m2[2]]])
+    all_vertices <- get_common_vertices(hyp.set[[subset_m3[1]]], 
+                                        hyp.set[[subset_m3[2]]],
+                                        hyp.set[[subset_m3[3]]])
     
     sub_n <- length(all_vertices)
     
     wt_A_i  <- restricted_adjacency_matrix(
-      match(intersect(hyp_set[[subset_m2[1]]], filter_id),all_vertices),
+      match(intersect(hyp.set[[subset_m3[1]]], filter_id),all_vertices),
       sub_n)
     wt_A_j  <- restricted_adjacency_matrix(
-      match(intersect(hyp_set[[subset_m2[2]]], filter_id),all_vertices),
+      match(intersect(hyp.set[[subset_m3[2]]], filter_id),all_vertices),
       sub_n)
-    # Type 2 triangle and Type 2 two-stars
-    return(clus_2_func(wt_A_i, wt_A_j))
+    wt_A_k  <- restricted_adjacency_matrix(
+      match(intersect(hyp.set[[subset_m3[3]]], filter_id),all_vertices),
+      sub_n)
+  
+    # Type 3 triangle and Type 2 two-stars
+    return(clus_3_func(wt_A_i, wt_A_j, wt_A_k))
   })
-  # compute the Type 2 clustering coefficient for the hypergraph
   return( sum(unlist(clus_list)[-2*c(1:apx_itr)])/sum(unlist(clus_list)[2*c(1:apx_itr)]) )
 }
 
-
 # Wrapper function =============================================================
-# Function generates the data and Type 2 clustering coefficient
+# Function generates the data and Type 3 clustering coefficient
 # n = number of vertices
 # m = number of hyperedges
 # n.prob = node appearance probability
 # apx_itr = approximate number of iteration for incomplete U-stat 
 # d = degree filtering, default : d = 1 (no filtering)
 
-get.val1 <-  function(n,m, n.prob, apx_itr, d = 1){
-  hyp_set <- data.gen(n,m,n.prob)
+get.val1 <-  function(n,m, n.prob,exponent, apx_itr, d = 1){
+  hyp.set <- data.gen(n,m,n.prob, exponent)
   
-  # Form weighted adjacency matrix
-  wt.A <- matrix(0, ncol = n, nrow = n)
+  # Form weighted incedence matrix
+  Inc_mat <- matrix(0, ncol = n, nrow = m)
   
   for (ii in 1:m){
-    wt.A[hyp_set[[ii]], hyp_set[[ii]]] <- wt.A[hyp_set[[ii]], hyp_set[[ii]]]+1
+    Inc_mat[ii,hyp.set[[ii]]] <- 1
   }
-  diag(wt.A) <- 0
-  filter_id <- c(1:n)[rowSums(wt.A) >= d]
+  filter_id <- c(1:n)[colSums(Inc_mat) >= d]
   
-  n.cluscoeff <- color_clus_coeff_2(hyp_set, m, n, apx_itr, filter_id)
+  n.cluscoeff <- color_clus_coeff_3(hyp.set, m, n, apx_itr, filter_id)
   return(n.cluscoeff)
 }
-
 
 # ==============================================================================
 # Main function for subsampling
 # n = number of vertices
 # m = hyper of hyperedges
-# hyp_set = hypergraph as a list
+# hyp.set = hypergraph as a list
 # sub.rep = Number of subsamples
 # s.m = subsample size
 # apx_itr = approximate number of iteration for incomplete U-stat 
 # apx_itr_sub = approximate number of iteration for incomplete U-stat for subsamples 
 # d = degree filtering, default : d = 1 (no filtering)
 
-get.val2 <- function(n, m, n.prob, sub.rep, s.m, apx_itr, apx_itr_sub, d){
-  hyp.set <- data.gen(n,m,n.prob) # generate a hyper graph
+get.val2 <- function(n, m, n.prob,exponent, sub.rep, s.m, apx_itr, apx_itr_sub, d){
+  hyp.set <- data.gen(n,m,n.prob,exponent) # generate a hyper graph
   
-  wt.A <- matrix(0, ncol = n, nrow = n)
+  # Form weighted incedence matrix
+  Inc_mat <- matrix(0, ncol = n, nrow = m)
   
   for (ii in 1:m){
-    wt.A[hyp.set[[ii]], hyp.set[[ii]]] <- wt.A[hyp.set[[ii]], hyp.set[[ii]]]+1
+    Inc_mat[ii,hyp.set[[ii]]] <- 1
   }
-  diag(wt.A) <- 0
-  filter_id <- c(1:n)[rowSums(wt.A) >= d]
+  filter_id <- c(1:n)[colSums(Inc_mat) >= d]
   
-  sample_val <- color_clus_coeff_2(hyp.set,m,n,apx_itr,filter_id)
+  sample_val <- color_clus_coeff_3(hyp.set,m,n,apx_itr,filter_id)
   
   # Subsamplimg iterations for each hyper graph
   sub.clus.ct <- lapply(1:sub.rep, function(sub_itr){
     # choose sample of size s.m
-    samp.hyp <- sample(1:m, s.m, replace = F)
+    samp.hyp <- sort(sample(1:m, s.m, replace = F))
     sub.hyp.set <- sapply(samp.hyp, function(list_i) hyp.set[[list_i]])
-    sub.clus <-  color_clus_coeff_2(sub.hyp.set, s.m, n, apx_itr_sub, filter_id)
+    sub.clus <-  color_clus_coeff_3(sub.hyp.set, s.m, n, apx_itr_sub, filter_id)
     return(sub.clus)
   })
   return(c(sample_val,unlist(sub.clus.ct)))
 }
 
-
 # Empirical coverage for CI using subsampling ==================================
-# type2.clus.true = result from get.val1
-# type2.clus.sub = result from get.val2
+# type3.clus.true = result from get.val1
+# type3.clus.sub = result from get.val2
 # m = number of hyperedges
 # s.m = s.m subsample sizes
 # sub.MC.rep = number of MC iteration for subsampling
 
-type2.clus.coeff.sub.ci <- function(type2.clus.true, type2.clus.sub,
-                                 m, s.m, sub.MC.rep, alpha = 0.05){
+type3.clus.coeff.sub.ci <- function(type3.clus.true, type3.clus.sub,
+                                    m, s.m, sub.MC.rep, alpha = 0.05){
   return(mean(unlist(lapply(1:sub.MC.rep, function(ii){
     z <- qnorm(1-alpha/2)
     # True value
-    trueval <- mean(unlist(type2.clus.true))
+    trueval <- mean(unlist(type3.clus.true))
     
-    sub_res_list <- unlist(type2.clus.sub[[ii]])
+    sub_res_list <- unlist(type3.clus.sub[[ii]])
     
     # subsample estimates
     sub_res <- sub_res_list[-1]
