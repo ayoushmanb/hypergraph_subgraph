@@ -103,15 +103,15 @@ get.val1 <-  function(n,m, n.prob,exponent, apx_itr, d = 1){
   }))
 }
 
-# ======
+# ==============================================================================
 
 m <- 500 # number of hyp edges
 n <- 1000 # number of vertices
 MC.rep <- 200 # MC iteration to approximate true variance
 apx_itr <-  round(m^1.5) # approximate iteration for incomplete U-stat
 exponent <- 5
-# d <- c(1, ceiling(c(0.5, 1, 5, 10, 20)*m^(1/2-1/exponent))) # degree filtering, default : d = 1 (no filtering)
-d_values <- round(c(1, m^(c(0.1, 0.167, 0.25, 0.5, 0.6, 0.75, 0.9))))
+d_exp_val <- c(0.1, 0.167, 0.25, 0.5, 0.6, 0.75, 0.9)
+d_values <- round(c(1, m^(d_exp_val))) # for no filtering
 
 n.prob <- dpois(2:n, 6) # Hyperedge sizes follow Poi(6)
 n.prob <- n.prob/sum(n.prob) # probability
@@ -121,11 +121,13 @@ type_2_two_stars_values <- pbmclapply(1:MC.rep, function(mc_rep){
   return(get.val1(n,m, n.prob,exponent, apx_itr,d_values))
 }, mc.cores = 20, mc.set.seed = F, mc.style = "ETA")
 
-type_2_two_stars_values_mat <- matrix(unlist(type_2_two_stars_values), byrow = T, nrow = MC.rep)/apx_itr
-type_2_two_stars_values_mat <- sqrt(m)*(type_2_two_stars_values_mat- mean(type_2_two_stars_values_mat[,1]))/sd(sqrt(m)*type_2_two_stars_values_mat[,1])
+type_2_two_stars_values_mat <- matrix(unlist(type_2_two_stars_values),
+                                      byrow = T, nrow = MC.rep)/apx_itr
+type_2_two_stars_values_mat <- sqrt(m)*(type_2_two_stars_values_mat- mean(type_2_two_stars_values_mat[,1]))/
+  sd(sqrt(m)*type_2_two_stars_values_mat[,1])
 
 
-# ======
+# ==============================================================================
 
 library(ggplot2)
 library(tidyr)
@@ -175,9 +177,10 @@ plot_density_matrix <- function(mat, c_vals) {
           aspect.ratio = 1)
 }
 
-pdf(paste0("type_2_two_stars_df_",m,"_",n,"_exp",exponent,".pdf"))
-plot_density_matrix(type_2_two_stars_values_mat,
-                    c(0.1, 0.167, 0.25, 0.5, 0.6, 0.75, 0.9)        )
+file_name <- paste0("type_2_two_stars_df_",m,"_",n,"_exp",exponent)
+
+pdf(paste0(file_name,".pdf"))
+plot_density_matrix(type_2_two_stars_values_mat,d_exp_val)
 dev.off()
 
-save.image(paste0("type_2_two_stars_df_",m,"_",n,"_exp",exponent,".RData"))
+save.image(paste0(file_name,".RData"))
