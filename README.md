@@ -21,6 +21,7 @@ hypergraph_subgraph/
 │ └── sparse_graphon_testing/# Tests based on sparse graphon models
 │
 ├── simulation/ # Simulation experiments
+│ └── additional_simulation/# For degree filtering
 │
 ├── support_functions/ # All utility functions
 │
@@ -38,7 +39,8 @@ install.packages(c(
   "rje",
   "ggplot2",
   "pbmclapply",
-  "RSpectra"
+  "RSpectra",
+  "tidyr"
 ))
 ```
 
