@@ -13,19 +13,19 @@ The full article is available at https://arxiv.org/abs/2508.13258.
 ```
 hypergraph_subgraph/
 │
-├── figures/ # All figures for the paper
+├── figures/                   # All figures for the paper
 │
 ├── real_data/
-│ ├── data_collection/ # Real-world hypergraph datasets (.RData)
-│ ├── hypergraph_testing/ # Tests based on hypergraph framework
-│ └── sparse_graphon_testing/# Tests based on sparse graphon models
+│ ├── data_collection/         # Real-world hypergraph datasets (.RData)
+│ ├── hypergraph_testing/      # Tests based on hypergraph framework
+│ └── sparse_graphon_testing/  # Tests based on sparse graphon models
 │
-├── simulation/ # Simulation experiments
-│ └── additional_simulation/# For degree filtering
+├── simulation/                # Simulation experiments
+│ └── additional_simulation/   # For degree filtering
 │
-├── support_functions/ # All utility functions
+├── support_functions/         # All utility functions
 │
-└── README.md # This file
+└── README.md                  # This file
 ```
 
 
